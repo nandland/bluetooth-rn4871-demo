@@ -1,0 +1,7 @@
+*.v~
+*.sv~
+*.vhd~
+build/bluetooth_rn4871_demo_Implmnt/*
+build/licbug.txt
+build/stdout.log
+build/synlog.tcl

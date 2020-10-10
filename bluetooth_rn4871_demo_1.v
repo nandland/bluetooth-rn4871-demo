@@ -7,20 +7,20 @@
 //
 // Description: This project sends UART traffic from a computer to the Go Board.
 // The UART is forwarded to a bluetooth transmitter which is received by a second
-// boards receiver. Both boards display the value from the computer on the 7 segment
-// display.
+// boards receiver. Receiver board displays the value from the computer on the 
+// 7 segment display.
 //
 // This leverages Go Board Project 7.
 //////////////////////////////////////////////////////////////////////////////
 
-module bluetooth_rn4871_demo1
+module bluetooth_rn4871_demo_1
  (input  i_Clk,       // Main Clock
   // Computer UART:
   input  i_UART_RX,   // UART RX Data from computer
   output o_UART_TX,   // UART TX Data to computer
   // Bluetooth Interface
-  input  io_PMOD_3,   // RXD, Receive on RN4871
-  output io_PMOD_4,   // TXD, Transmit on RN4871
+  output io_PMOD_2,   // RXD, Receive on RN4871 (FPGA drives this)
+  input  io_PMOD_3,   // TXD, Transmit on RN4871
   output io_PMOD_8,   // RST_N, Reset (active low)
   // 7-Segment Displays, Segment1 is upper digit
   output o_Segment1_A,
@@ -40,7 +40,7 @@ module bluetooth_rn4871_demo1
   output o_Segment2_G);
 
   // 25,000,000 / 115,200 = 217
-  localparam CLOCKS_PER_BIT = 217
+  localparam CLOCKS_PER_BIT = 217;
 
   wire w_RX_From_Comp_DV, w_RX_From_BT_DV;
   wire [7:0] w_RX_From_Comp_Byte, w_RX_From_BT_Byte;
@@ -87,16 +87,20 @@ module bluetooth_rn4871_demo1
 */
 
   // Forward data from computer to the bluetooth transmitter
-  assign io_PMOD_4 = i_UART_RX;
+  assign o_UART_TX = io_PMOD_3;
+  assign io_PMOD_2 = i_UART_RX;
 
-  // UART Receiver (data coming from bluetooth)
+  // Drive BT chip out of reset
+  assign io_PMOD_8 = 1'b1;
+
+  // UART Receiver (data coming from computer)
   // Gets forwarded to the 7-segment displays
   UART_RX #(.CLKS_PER_BIT(CLOCKS_PER_BIT)) UART_RX_From_BT_Inst
-  (.i_Clock(i_Clk),
-   .i_RX_Serial(io_PMOD_3),
+  (.i_Rst_L(1'b1),
+   .i_Clock(i_Clk),
+   .i_RX_Serial(i_UART_RX),
    .o_RX_DV(w_RX_From_BT_DV),
    .o_RX_Byte(w_RX_From_BT_Byte));
-
 
   // Binary to 7-Segment Converter for Upper Digit
   Binary_To_7Segment SevenSeg1_Inst
