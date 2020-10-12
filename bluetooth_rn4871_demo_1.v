@@ -37,7 +37,12 @@ module bluetooth_rn4871_demo_1
   output o_Segment2_D,
   output o_Segment2_E,
   output o_Segment2_F,
-  output o_Segment2_G);
+  output o_Segment2_G,
+  // LED Outputs
+  output o_LED_1,
+  output o_LED_2, 
+  output o_LED_3,
+  output o_LED_4);
 
   // 25,000,000 / 115,200 = 217
   localparam CLOCKS_PER_BIT = 217;
@@ -54,38 +59,6 @@ module bluetooth_rn4871_demo_1
   wire w_Segment1_F, w_Segment2_F;
   wire w_Segment1_G, w_Segment2_G;
 
-/* COMMENTED OUT AND JUST TIE COMPUTER TO BT DIRECTLY.
-  // UART Receiver (data coming from computer)
-  UART_RX #(.CLKS_PER_BIT(CLOCKS_PER_BIT)) UART_RX_From_Comp_Inst
-  (.i_Clock(i_Clk),
-   .i_RX_Serial(i_UART_RX),
-   .o_RX_DV(w_RX_From_Comp_DV),
-   .o_RX_Byte(w_RX_From_Comp_Byte));
-
-  // UART Transmitter (data sent to computer)
-  // Data sent to computer is data from the Bluetooth Module.
-  UART_TX #(.CLKS_PER_BIT(CLOCKS_PER_BIT)) UART_TX_To_Comp_Inst
-  (.i_Clock(i_Clk),
-   .i_TX_DV(w_RX_From_BT_DV),
-   .i_TX_Byte(w_RX_From_BT_Byte),
-   .o_TX_Active(w_TX_To_Comp_Active),
-   .o_TX_Serial(w_TX_To_Comp_Serial),
-   .o_TX_Done());
-
-  // Drive UART to computer line high when transmitter is not active
-  assign o_UART_TX = w_TX_To_Comp_Active ? w_TX_To_Comp_Serial : 1'b1; 
-
-  // UART Transmitter (data sent to bluetooth TX)
-  // Data sent to bluetooth module is from computer receiver.
-  UART_TX #(.CLKS_PER_BIT(CLOCKS_PER_BIT)) UART_TX_To_Comp_Inst
-  (.i_Clock(i_Clk),
-   .i_TX_DV(w_RX_From_BT_DV),
-   .i_TX_Byte(w_RX_From_BT_Byte),
-   .o_TX_Active(w_TX_To_Comp_Active),
-   .o_TX_Serial(w_TX_To_Comp_Serial),
-   .o_TX_Done());
-*/
-
   // Forward data from computer to the bluetooth transmitter
   assign o_UART_TX = io_PMOD_3;
   assign io_PMOD_2 = i_UART_RX;
@@ -93,12 +66,12 @@ module bluetooth_rn4871_demo_1
   // Drive BT chip out of reset
   assign io_PMOD_8 = 1'b1;
 
-  // UART Receiver (data coming from computer)
+  // UART Receiver (data coming from bluetooth)
   // Gets forwarded to the 7-segment displays
   UART_RX #(.CLKS_PER_BIT(CLOCKS_PER_BIT)) UART_RX_From_BT_Inst
   (.i_Rst_L(1'b1),
    .i_Clock(i_Clk),
-   .i_RX_Serial(i_UART_RX),
+   .i_RX_Serial(io_PMOD_3),
    .o_RX_DV(w_RX_From_BT_DV),
    .o_RX_Byte(w_RX_From_BT_Byte));
 
@@ -142,5 +115,10 @@ module bluetooth_rn4871_demo_1
   assign o_Segment2_E = ~w_Segment2_E;
   assign o_Segment2_F = ~w_Segment2_F;
   assign o_Segment2_G = ~w_Segment2_G;
+
+  assign o_LED_1 = 1'b0;
+  assign o_LED_2 = 1'b0;
+  assign o_LED_3 = 1'b0;
+  assign o_LED_4 = 1'b0;
 
 endmodule
